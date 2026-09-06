@@ -79,7 +79,7 @@ class F3netDetector(AbstractDetector):
             if 'pointwise' in name:
                 state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
         state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
-        conv1_data = state_dict['conv1.weight'].data
+        conv1_data = state_dict['backbone.conv1.weight'].data
         backbone.load_state_dict(state_dict, False)
         logger.info('Load pretrained model from {}'.format(config['pretrained']))
 
@@ -97,11 +97,11 @@ class F3netDetector(AbstractDetector):
         loss_func = loss_class()
         return loss_func
     
-    def features(self, data_dict: dict) -> torch.tensor:
+    def features(self, data_dict: dict) -> torch.Tensor:
         fea_FAD = self.FAD_head(data_dict['image']) # [B, 12, 256, 256]
         return self.backbone.features(fea_FAD)
 
-    def classifier(self, features: torch.tensor) -> torch.tensor:
+    def classifier(self, features: torch.Tensor) -> torch.Tensor:
         return self.backbone.classifier(features)
     
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
@@ -141,14 +141,14 @@ class Filter(nn.Module):
         super(Filter, self).__init__()
         self.use_learnable = use_learnable
 
-        self.base = nn.Parameter(torch.tensor(generate_filter(band_start, band_end, size)), requires_grad=False)
+        self.base = nn.Parameter(torch.Tensor(generate_filter(band_start, band_end, size)), requires_grad=False)
         if self.use_learnable:
             self.learnable = nn.Parameter(torch.randn(size, size), requires_grad=True)
             self.learnable.data.normal_(0., 0.1)
 
         self.norm = norm
         if norm:
-            self.ft_num = nn.Parameter(torch.sum(torch.tensor(generate_filter(band_start, band_end, size))), requires_grad=False)
+            self.ft_num = nn.Parameter(torch.sum(torch.Tensor(generate_filter(band_start, band_end, size))), requires_grad=False)
 
 
     def forward(self, x):
@@ -170,8 +170,8 @@ class FAD_Head(nn.Module):
         super(FAD_Head, self).__init__()
 
         # init DCT matrix
-        self._DCT_all = nn.Parameter(torch.tensor(DCT_mat(size)).float(), requires_grad=False)
-        self._DCT_all_T = nn.Parameter(torch.transpose(torch.tensor(DCT_mat(size)).float(), 0, 1), requires_grad=False)
+        self._DCT_all = nn.Parameter(torch.Tensor(DCT_mat(size)).float(), requires_grad=False)
+        self._DCT_all_T = nn.Parameter(torch.transpose(torch.Tensor(DCT_mat(size)).float(), 0, 1), requires_grad=False)
 
         # define base filters and learnable
         # 0 - 1/16 || 1/16 - 1/8 || 1/8 - 1

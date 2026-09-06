@@ -5,3 +5,10 @@
 *.pth
 *.pt
 *.dat
+*.log
+
+tmp/
+.vscode/
+.venv/
+datasets/
+preprocessing/dataset_json/*.json

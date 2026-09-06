@@ -68,24 +68,24 @@ class SpslDetector(AbstractDetector):
         backbone = backbone_class(model_config)
 
         # To get a good performance, use the ImageNet-pretrained Xception model
-        state_dict = torch.load(config['pretrained'])
-        for name, weights in state_dict.items():
-            if 'pointwise' in name:
-                state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
+        # state_dict = torch.load(config['pretrained'])
+        # for name, weights in state_dict.items():
+        #     if 'pointwise' in name:
+        #         state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
+        # state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
 
-        # remove conv1 from state_dict
-        conv1_data = state_dict.pop('conv1.weight')
+        # # remove conv1 from state_dict
+        # conv1_data = state_dict.pop('conv1.weight')
 
-        backbone.load_state_dict(state_dict, False)
-        logger.info('Load pretrained model from {}'.format(config['pretrained']))
+        # backbone.load_state_dict(state_dict, False)
+        # logger.info('Load pretrained model from {}'.format(config['pretrained']))
 
-        # copy on conv1
-        # let new conv1 use old param to balance the network
-        backbone.conv1 = nn.Conv2d(4, 32, 3, 2, 0, bias=False)
-        avg_conv1_data = conv1_data.mean(dim=1, keepdim=True)  # average across the RGB channels
-        backbone.conv1.weight.data = avg_conv1_data.repeat(1, 4, 1, 1)  # repeat the averaged weights across the 4 new channels
-        logger.info('Copy conv1 from pretrained model')
+        # # copy on conv1
+        # # let new conv1 use old param to balance the network
+        # backbone.conv1 = nn.Conv2d(4, 32, 3, 2, 0, bias=False)
+        # avg_conv1_data = conv1_data.mean(dim=1, keepdim=True)  # average across the RGB channels
+        # backbone.conv1.weight.data = avg_conv1_data.repeat(1, 4, 1, 1)  # repeat the averaged weights across the 4 new channels
+        # logger.info('Copy conv1 from pretrained model')
         return backbone
 
     def build_loss(self, config):
